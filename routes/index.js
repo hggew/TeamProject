@@ -54,6 +54,7 @@ router.get('/html_test', userController.HtmlTestAPI);
 
 router.get('/KorHistory', userController.KorHistoryAPI);
 router.get('/Toeic', userController.ToeicAPI);
+router.get('/ToeicCalendar', userController.ToeicCalendarAPI);
 //db연결
 router.get('/db', userController.DBConnectAPI);
 
