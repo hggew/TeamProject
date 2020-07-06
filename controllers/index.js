@@ -57,7 +57,8 @@ function KorHistoryAPI(req, res, next) {
         // var ff= table[0];
         var sss= table.구분;
         res.status(200).json({
-            sss
+          sss
+            }
         });
     });
 
@@ -69,7 +70,7 @@ function ToeicAPI(req, res, next) {
     console.log("index/Toeic router start");
     //시험일정
 
-    tableto_json.convertUrl(
+    tabletojson.convertUrl(
         'https://appexam.ybmnet.co.kr/toeic/info/receipt_schedule.asp',
         function (tablesAsJson) {
             res.status(200).json({

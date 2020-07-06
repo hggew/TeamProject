@@ -57,7 +57,4 @@ router.get('/Toeic', userController.ToeicAPI);
 //db연결
 router.get('/db', userController.DBConnectAPI);
 
-
-
-
 module.exports = router;
