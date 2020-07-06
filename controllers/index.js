@@ -67,7 +67,7 @@ function KorHistoryAPI(req, res, next) {
 }*/
 
 function ToeicCalendarAPI(req, res, next) {
-    console.log("index/Toeic router start");
+    console.log("index/ToeicCalendar router start");
     //시험일정
 
     tabletojson.convertUrl(
@@ -81,6 +81,20 @@ function ToeicCalendarAPI(req, res, next) {
     );
 }
 
+function ToeicReceiptAPI(req, res, next) {
+    console.log("index/ToeicReceipt router start");
+    //시험일정
+
+    tabletojson.convertUrl(
+        'https://appexam.ybmnet.co.kr/toeic/receipt/receipt.asp',
+        function (tablesAsJson) {
+            res.status(200).json({
+                tablesAsJson
+            });
+            // console.log(tablesAsJson[0][0]);
+        }
+    );
+}
 function DBConnectAPI(req, res, next) {
     var db_info = {
         host: 'localhost',
@@ -144,4 +158,5 @@ module.exports = {
     KorHistoryAPI: KorHistoryAPI,
     DBConnectAPI: DBConnectAPI,
     ToeicCalendarAPI: ToeicCalendarAPI,
+    ToeicReceiptAPI: ToeicReceiptAPI,
 }
