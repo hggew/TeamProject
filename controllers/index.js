@@ -1,6 +1,8 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const tabletojson = require("tabletojson").Tabletojson;
+const request = require('request');
+const convert = require('xml-js');
 var mysql = require('mysql');
 
 function basicAPI(req, res) {
@@ -65,7 +67,7 @@ function KorHistoryAPI(req, res, next) {
     // console.log(tablesAsJson);
 
 }*/
-
+//토익 일정
 function ToeicCalendarAPI(req, res, next) {
     console.log("index/ToeicCalendar router start");
     //시험일정
@@ -80,7 +82,7 @@ function ToeicCalendarAPI(req, res, next) {
         }
     );
 }
-
+//토익 수수료
 function ToeicReceiptAPI(req, res, next) {
     console.log("index/ToeicReceipt router start");
     //시험일정
@@ -95,6 +97,28 @@ function ToeicReceiptAPI(req, res, next) {
         }
     );
 }
+//기술사 시험 시행일정 조회
+function ExamCalendarAPI(req, res, next){
+  console.log("index/ExamCalendar router start");
+
+  var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getPEList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
+
+  request.get(requestUrl, (err, res, body)=> {
+
+     if(err) {
+           console.log(`err => ${err}`)
+     }
+    else {
+        if(res.statusCode == 200) {
+                  var result = body
+                  console.log(`body data => ${result}`)
+                  var xmlToJson = convert.xml2json(result, {compact: true, spaces: 4});
+                  console.log(`xml to json => ${xmlToJson}`)
+         }
+     }
+  });
+}
+
 function DBConnectAPI(req, res, next) {
     var db_info = {
         host: 'localhost',
@@ -159,4 +183,5 @@ module.exports = {
     DBConnectAPI: DBConnectAPI,
     ToeicCalendarAPI: ToeicCalendarAPI,
     ToeicReceiptAPI: ToeicReceiptAPI,
+    ExamCalendarAPI: ExamCalendarAPI,
 }

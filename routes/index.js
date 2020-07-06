@@ -3,6 +3,8 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const tabletojson = require("tabletojson").Tabletojson;
 var mysql = require('mysql');
+const request = require('request');
+const convert = require('xml-js');
 
 var router = express.Router();
 
@@ -55,6 +57,7 @@ router.get('/html_test', userController.HtmlTestAPI);
 router.get('/KorHistory', userController.KorHistoryAPI);
 router.get('/ToeicCalendar', userController.ToeicCalendarAPI);
 router.get('/ToeicReceipt', userController.ToeicReceiptAPI);
+router.get('/ExamCalendar', userController.ExamCalendarAPI);
 //db연결
 router.get('/db', userController.DBConnectAPI);
 
