@@ -57,7 +57,11 @@ router.get('/html_test', userController.HtmlTestAPI);
 router.get('/KorHistory', userController.KorHistoryAPI);
 router.get('/ToeicCalendar', userController.ToeicCalendarAPI);
 router.get('/ToeicReceipt', userController.ToeicReceiptAPI);
-router.get('/ExamCalendar', userController.ExamCalendarAPI);
+router.get('/EngineerCalendar', userController.EngineerCalendarAPI);
+router.get('/FunctionalCalendar', userController.FunctionalCalendarAPI);
+router.get('/TechnicianCalendar', userController.TechnicianCalendarAPI);
+router.get('/IndustrialEngineerCalendar', userController.IndustrialEngineerCalendarAPI);
+
 //db연결
 router.get('/db', userController.DBConnectAPI);
 

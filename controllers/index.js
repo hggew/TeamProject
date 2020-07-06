@@ -97,9 +97,10 @@ function ToeicReceiptAPI(req, res, next) {
         }
     );
 }
+
 //기술사 시험 시행일정 조회
-function ExamCalendarAPI(req, res, next){
-  console.log("index/ExamCalendar router start");
+function EngineerCalendarAPI(req, res, next){
+  console.log("index/EngineerCalendar router start");
 
   var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getPEList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
@@ -119,6 +120,80 @@ function ExamCalendarAPI(req, res, next){
   });
 }
 
+//기능장 시험 시행일정 조회
+function FunctionalCalendarAPI(req, res, next){
+  console.log("index/FunctionalCalendar router start");
+
+  var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getPEList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
+
+  request.get(requestUrl, (err, res, body)=> {
+
+     if(err) {
+           console.log(`err => ${err}`)
+     }
+    else {
+        if(res.statusCode == 200) {
+                  var result = body
+                  console.log(`body data => ${result}`)
+                  var xmlToJson = convert.xml2json(result, {compact: true, spaces: 4});
+                  console.log(`xml to json => ${xmlToJson}`)
+         }
+     }
+  });
+}
+
+//기사, 산업기사 시험 시행일정 조회
+function IndustrialEngineerCalendarAPI(req, res, next){
+  console.log("index/IndustrialEngineerCalendar router start");
+
+  var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getEList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
+
+  request.get(requestUrl, (err, res, body)=> {
+
+     if(err) {
+           console.log(`err => ${err}`)
+     }
+    else {
+        if(res.statusCode == 200) {
+                  var result = body
+                  console.log(`body data => ${result}`)
+                  var xmlToJson = convert.xml2json(result, {compact: true, spaces: 4});
+                  console.log(`xml to json => ${xmlToJson}`)
+         }
+     }
+  });
+}
+
+//기능사 시험 시행일정 조회
+function TechnicianCalendarAPI(req, res, next){
+  console.log("index/TechnicianCalendar router start");
+
+  var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getCList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&stdt=2020&'
+
+  request.get(requestUrl, (err, res, body)=> {
+
+     if(err) {
+           console.log(`err => ${err}`)
+     }
+    else {
+        if(res.statusCode == 200) {
+                  var result = body
+                  console.log(`body data => ${result}`)
+                  var xmlToJson = convert.xml2json(result, {compact: true, spaces: 4});
+                  console.log(`xml to json => ${xmlToJson}`)
+         }
+     }
+  });
+}
+
+//종목별 응시수수료 조회>요청변수 종목코드? >http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getFeeList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&jmcd=1320&
+
+//종목별 시행일정 목록 조회> 종목코드? >http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getJMList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&jmcd=1320&
+
+//국가전문자격 시험 시행일정 정보>http://openapi.q-net.or.kr/api/service/rest/InquiryTestDatesNationalProfessionalQualificationSVC/getList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&seriesCd=21&
+
+
+//db
 function DBConnectAPI(req, res, next) {
     var db_info = {
         host: 'localhost',
@@ -183,5 +258,8 @@ module.exports = {
     DBConnectAPI: DBConnectAPI,
     ToeicCalendarAPI: ToeicCalendarAPI,
     ToeicReceiptAPI: ToeicReceiptAPI,
-    ExamCalendarAPI: ExamCalendarAPI,
+    EngineerCalendarAPI: EngineerCalendarAPI,
+    FunctionalCalendarAPI: FunctionalCalendarAPI,
+    IndustrialEngineerCalendarAPI: IndustrialEngineerCalendarAPI,
+    TechnicianCalendarAPI: TechnicianCalendarAPI,
 }
