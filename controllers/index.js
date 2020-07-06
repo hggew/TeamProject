@@ -4,6 +4,10 @@ const tabletojson = require("tabletojson").Tabletojson;
 const request = require('request');
 const convert = require('xml-js');
 var mysql = require('mysql');
+var Iconv = require('iconv').Iconv;
+// var iconv = new Iconv('euc-kr', 'utf-8//translit//ignore'); //코딩 변환 과정 중에 이해할 수 없는 값이 입력됐을 경우 이를 어떻게든 바꾸거나 (어떻게인지는 잘 모른다) 아니면 무시
+var euckr2utf8 = new Iconv('EUC-KR', 'UTF-8');
+var fs= require("fs");
 
 function basicAPI(req, res) {
     res.render('index',{});
@@ -94,7 +98,7 @@ function KorHistoryAPI(req, res) {
     var url = 'http://www.historyexam.go.kr/pageLink.do?link=examSchedule';
     tabletojson.convertUrl(url).then(function (tablesAsJson) {
         var TableList=tablesAsJson[0];
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < TableList.length; i++) {
             
             var table = TableList[i];
             
@@ -112,14 +116,15 @@ function KorHistoryAPI(req, res) {
             var resultday = table.합격자발표;
             r_date[i] = StringToDate(resultday);
 
-            //dbinsert 
+            //dbinsert certificate
             var sql = "insert into certificate(time, name, type, organizer) values(?,?,?,?);";
             var params = [time[i], '한국사능력검정시험', '자격증', '.'];
             connection.query(sql, params, function (err, results) {
                 if (err) { console.log("err"); throw err; }
                 else { console.log("insert success"); }
             });
-
+            
+            //dbinsert certificate_date
             sql="insert into certificate_date(name, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?);";
             params = ['한국사능력검정시험', d_date[i], s_date[i], e_date[i], r_date[i]];
             connection.query(sql, params, function (err, results) {
@@ -146,23 +151,81 @@ function KorHistoryAPI(req, res) {
 
 
 
-
 //토익------------------------------------------------------------------
 //토익 일정
+var toeic_time=[];
+var toeic_s_date=[];
+var toeic_e_date=[];
+var toeic_d_date=[];
+var toeic_r_date=[];
+
+var SpliteToeicInfo = function(str, i){
+    toeic_time[i] = str.split("제")[1].split("20.")[0];
+
+    toeic_s_date[i]=str.split("정기접수")[1].split("(")[0];
+    toeic_s_date[i]=toeic_s_date[i].replace(/\./g,"-"); //정규표현식으로 온점 >> -
+
+    toeic_e_date[i]=str.split("~")[1].split("(")[0];
+    toeic_e_date[i]=toeic_e_date[i].replace(/\./g,"-"); //정규표현식으로 온점 >> -
+
+    toeic_d_date[i]=str.split("회")[1].split("(")[0];
+    toeic_d_date[i]=toeic_d_date[i].replace(/\./g,"-"); //정규표현식으로 온점 >> -
+ 
+    toeic_r_date[i]=str.split("분")[1].split("(")[0];
+    toeic_r_date[i]=toeic_r_date[i].replace(/\./g,"-"); //정규표현식으로 온점 >> -
+
+    console.log("time : "+toeic_time[i] +toeic_s_date[i] +toeic_e_date[i]+toeic_d_date[i]+ toeic_r_date[i]);
+}
+
+
 function ToeicCalendarAPI(req, res, next) {
     console.log("index/ToeicCalendar router start");
-    //시험일정
 
-    tabletojson.convertUrl(
-        'https://appexam.ybmnet.co.kr/toeic/info/receipt_schedule.asp',
-        function (tablesAsJson) {
-            res.status(200).json({
-                tablesAsJson
+    let url ='https://appexam.ybmnet.co.kr/toeic/info/receipt_schedule.asp';
+
+    var result;
+    var options = { encoding: "binary", method: "GET", uri: url, json: true };
+    request(options, function (err, response, html) {
+        var contents = new Buffer(html, 'binary'); //인코딩 변환
+        result = euckr2utf8.convert(contents).toString();
+        //var result = euckr2utf8.convert(html).toString();
+        // console.log(result);
+        // console.log(typeof result);
+
+        $ = cheerio.load(result);
+        info_list = [];
+        $('.table_info_print').find('tr').each(function (i, elem) {
+            info_list[i++] = $(this).children().text();
+        })
+        res.status(200).json({ info_list });
+
+        for (var j = 1; j < info_list.length; j++) {
+            console.log(info_list[j] + "@@@");
+            //날짜 구하기
+            SpliteToeicInfo(info_list[j], j - 1);
+
+            //dbinsert certificate
+            // var sql = "insert into certificate(time, name, type, organizer) values(?,?,?,?);";
+            // var params = [toeic_time[j-1], '토익', '어학자격증', '.'];
+            // connection.query(sql, params, function (err, results) {
+            //     if (err) { console.log("err"); throw err; }
+            //     else { console.log("insert success"); }
+            // });
+
+            //dbinsert certificate_date
+            sql="insert into certificate_date(name, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?);";
+            params = ['토익', toeic_d_date[j-1], toeic_s_date[j-1], toeic_e_date[j-1], toeic_r_date[j-1]];
+            connection.query(sql, params, function (err, results) {
+                if (err) { console.log("err"); throw err; }
+                else { console.log("insert success 2"); }
             });
-            // console.log(tablesAsJson[0][0]);
         }
-    );
+    });
+
 }
+
+
+
 
 //토익 수수료
 function ToeicReceiptAPI(req, res, next) {
