@@ -23,9 +23,7 @@ const convert = require('xml-js');
 const tabletojson = require("tabletojson").Tabletojson;
 
 var Iconv = require('iconv').Iconv;
-// var iconv = new Iconv('euc-kr', 'utf-8//translit//ignore'); //코딩 변환 과정 중에 이해할 수 없는 값이 입력됐을 경우 이를 어떻게든 바꾸거나 (어떻게인지는 잘 모른다) 아니면 무시
 var euckr2utf8 = new Iconv('EUC-KR', 'UTF-8');
-var fs = require("fs");
 
 
 var indexRouter = require('./routes/index');
@@ -51,6 +49,7 @@ app.use(bodyParser.json());//JSON 타입으로 파싱하게 설정
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+
 //DB---------------------------------------------------------
 var db_info = {
   host: 'localhost',
@@ -71,10 +70,7 @@ var StringToDate = function (str) {
   var md = str.split("년 ")[1];
   var m = md.split("월 ")[0];
   var d = md.split("월 ")[1].split("일")[0];
-  // console.log(y +"/"+ m+ "/"+ d);
-  // var date = new Date(y,m,d).toUTCString();
   var date = y + "-" + m + "-" + d;
-  console.log(date);
   return date;
 }
 
@@ -85,8 +81,6 @@ var kor_d_date = [];
 var kor_r_date = [];
 
 function KorHistoryAPI(req, res) {
-  console.log("index/KorHistory router start");
-  //시험일정
   //테이블가져오기
   var url = 'http://www.historyexam.go.kr/pageLink.do?link=examSchedule';
   tabletojson.convertUrl(url).then(function (tablesAsJson) {
@@ -117,7 +111,6 @@ function KorHistoryAPI(req, res) {
         if (err) { console.log("err"); throw err; }
         else { console.log("kor insert success"); }
       });
-
       //dbinsert certificate_date
       sql = "insert into certificate_date(name,time, doc_d_day, doc_apply_start, doc_apply_end, doc_result_release) values(?,?,?,?,?,?);";
       params = ['한국사능력검정시험', kor_time[i], kor_d_date[i], kor_s_date[i], kor_e_date[i], kor_r_date[i]];
@@ -153,14 +146,9 @@ var SpliteToeicInfo = function (str, i) {
 
   toeic_r_date[i] = str.split("분")[1].split("(")[0];
   toeic_r_date[i] = toeic_r_date[i].replace(/\./g, "-"); //정규표현식으로 온점 >> -
-
-  console.log("time : " + toeic_time[i] + toeic_s_date[i] + toeic_e_date[i] + toeic_d_date[i] + toeic_r_date[i]);
 }
 
-
 function ToeicCalendarAPI(req, res, next) {
-  console.log("index/ToeicCalendar router start");
-
   let url = 'https://appexam.ybmnet.co.kr/toeic/info/receipt_schedule.asp';
 
   var result;
@@ -168,19 +156,14 @@ function ToeicCalendarAPI(req, res, next) {
   request(options, function (err, response, html) {
     var contents = new Buffer(html, 'binary'); //인코딩 변환
     result = euckr2utf8.convert(contents).toString();
-    //var result = euckr2utf8.convert(html).toString();
-    // console.log(result);
-    // console.log(typeof result);
 
     $ = cheerio.load(result);
     info_list = [];
     $('.table_info_print').find('tr').each(function (i, elem) {
       info_list[i++] = $(this).children().text();
     })
-    // res.status(200).json({ info_list });
 
     for (var j = 1; j < info_list.length; j++) {
-      console.log(info_list[j] + "@@@");
       //날짜 구하기
       SpliteToeicInfo(info_list[j], j - 1);
       // dbinsert certificate
@@ -216,6 +199,7 @@ function ToeicCalendarAPI(req, res, next) {
 //         }
 //     );
 // }
+
 
 
 
@@ -255,8 +239,6 @@ var SpliteEngineerInfo = function (str, i) {
 }
 
 function EngineerCalendarAPI(req, res, next) {
-  console.log("index/EngineerCalendar router start");
-
   var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getPEList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
   request.get(requestUrl, (err, resp, body) => {
@@ -266,16 +248,12 @@ function EngineerCalendarAPI(req, res, next) {
     }
     if (resp.statusCode == 200) {
       var result = body
-      // console.log(`body data => ${result}`);
       var xmlToJson = convert.xml2json(result, { compact: true, spaces: 4, textFn: RemoveJsonTextAttribute });
       var jsonData = JSON.parse(xmlToJson);
 
-      // console.log(`xml to json => ${xmlToJson}`);
       var items = jsonData.response.body.items;
 
       for (var j = 0; j < items.item.length; j++) {
-        // Engineer_time[j]=items.item[j].description;
-        // console.log(Engineer_time[j]);            
         SpliteEngineerInfo(items.item[j], j);
         //dbinsert certificate
         if (Engineer_time[j] != Engineer_time[j - 1]) { //중복제거
@@ -300,6 +278,7 @@ function EngineerCalendarAPI(req, res, next) {
 
 
 
+
 //기능장 시험 시행일정 조회
 var Functional_time = [];
 var Functional_doc_s_date = [];
@@ -310,7 +289,6 @@ var Functional_prac_s_date = [];
 var Functional_prac_e_date = [];
 var Functional_prac_d_date = [];
 var Functional_prac_r_date = [];
-
 
 var SpliteFunctionalInfo = function (str, i) {
   Functional_time[i] = str.description.split('제')[1].split("회)")[0];
@@ -325,12 +303,9 @@ var SpliteFunctionalInfo = function (str, i) {
 }
 
 function FunctionalCalendarAPI(req, res, next) {
-  console.log("index/FunctionalCalendar router start");
-
   var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getMCList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
   request.get(requestUrl, (err, resp, body) => {
-
     if (err) {
       console.log(`err => ${err}`)
     }
@@ -365,7 +340,6 @@ function FunctionalCalendarAPI(req, res, next) {
 
 
 
-
 //기사, 산업기사 시험 시행일정 조회
 var Industrial_time = [];
 var Industrial_doc_s_date = [];
@@ -390,12 +364,9 @@ var SpliteIndustrialInfo = function (str, i) {
 }
 
 function IndustrialEngineerCalendarAPI(req, res, next) {
-  console.log("index/IndustrialEngineerCalendar router start");
-
   var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getEList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
   request.get(requestUrl, (err, resp, body) => {
-
     if (err) {
       console.log(`err => ${err}`)
     }
@@ -410,6 +381,7 @@ function IndustrialEngineerCalendarAPI(req, res, next) {
       for (var j = 0; j < items.item.length; j++) {
         SpliteIndustrialInfo(items.item[j], j);
       }
+
       //db에 넣을 정보 편집
       for (var j = 0; j < items.item.length; j++) {
         for (var k = 0; k < items.item.length; k++) {
@@ -425,7 +397,6 @@ function IndustrialEngineerCalendarAPI(req, res, next) {
           }
         }
       }
-
 
       //db 저장
       for (var j = 0; j < items.item.length; j++) {
@@ -446,11 +417,9 @@ function IndustrialEngineerCalendarAPI(req, res, next) {
           });
         }
       }
-
     }
   });
 }
-
 
 
 
@@ -478,17 +447,12 @@ var SpliteTechnicianInfo = function (str, i) {//(2020년도 제1회)
   Technician_prac_e_date[i] = str.pracregenddt;
   Technician_prac_d_date[i] = str.pracexamstartdt;
   Technician_prac_r_date[i] = str.pracpassdt;
-  // var ttt=Technician_prac_e_date[i]-Technician_prac_s_date[i];
-  // console.log(ttt);
 }
 
 function TechnicianCalendarAPI(req, res, next) {
-  console.log("index/TechnicianCalendar router start");
-
   var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getCList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
   request.get(requestUrl, (err, resp, body) => {
-
     if (err) {
       console.log(`err => ${err}`)
     }
@@ -525,14 +489,12 @@ function TechnicianCalendarAPI(req, res, next) {
 
 
 
-
 KorHistoryAPI();
 ToeicCalendarAPI();
 EngineerCalendarAPI();
 FunctionalCalendarAPI();
 IndustrialEngineerCalendarAPI();
 TechnicianCalendarAPI();
-
 
 
 
