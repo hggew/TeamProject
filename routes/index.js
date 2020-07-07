@@ -28,23 +28,23 @@ router.post('/submit',userController.submitAPI);
 
 
 
-//한국사
-router.get('/KorHistory', userController.KorHistoryAPI);
+// //한국사
+// router.get('/KorHistory', userController.KorHistoryAPI);
 
-//토익 일정, 수수료
-router.get('/ToeicCalendar', userController.ToeicCalendarAPI);
-router.get('/ToeicReceipt', userController.ToeicReceiptAPI);
+// //토익 일정, 수수료
+// router.get('/ToeicCalendar', userController.ToeicCalendarAPI);
+// router.get('/ToeicReceipt', userController.ToeicReceiptAPI);
 
-//큐넷
-router.get('/EngineerCalendar', userController.EngineerCalendarAPI);
-router.get('/FunctionalCalendar', userController.FunctionalCalendarAPI);
-router.get('/IndustrialEngineerCalendar', userController.IndustrialEngineerCalendarAPI);
-router.get('/TechnicianCalendar', userController.TechnicianCalendarAPI);
+// //큐넷
+// router.get('/EngineerCalendar', userController.EngineerCalendarAPI);
+// router.get('/FunctionalCalendar', userController.FunctionalCalendarAPI);
+// router.get('/IndustrialEngineerCalendar', userController.IndustrialEngineerCalendarAPI);
+// router.get('/TechnicianCalendar', userController.TechnicianCalendarAPI);
 
 
-//db연결 test
-router.get('/db', userController.DBConnectAPI);
-router.get('/db_insert', userController.DBInsertAPI);
+// //db연결 test
+// router.get('/db', userController.DBConnectAPI);
+// router.get('/db_insert', userController.DBInsertAPI);
 
 
 
