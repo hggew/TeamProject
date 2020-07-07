@@ -38,8 +38,8 @@ router.get('/ToeicReceipt', userController.ToeicReceiptAPI);
 //큐넷
 router.get('/EngineerCalendar', userController.EngineerCalendarAPI);
 router.get('/FunctionalCalendar', userController.FunctionalCalendarAPI);
-router.get('/TechnicianCalendar', userController.TechnicianCalendarAPI);
 router.get('/IndustrialEngineerCalendar', userController.IndustrialEngineerCalendarAPI);
+router.get('/TechnicianCalendar', userController.TechnicianCalendarAPI);
 
 
 //db연결 test

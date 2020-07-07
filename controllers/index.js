@@ -125,8 +125,8 @@ function KorHistoryAPI(req, res) {
             });
 
             //dbinsert certificate_date
-            sql = "insert into certificate_date(name, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?);";
-            params = ['한국사능력검정시험', d_date[i], s_date[i], e_date[i], r_date[i]];
+            sql = "insert into certificate_date(name,time, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?,?);";
+            params = ['한국사능력검정시험',time[i], d_date[i], s_date[i], e_date[i], r_date[i]];
             connection.query(sql, params, function (err, results) {
                 if (err) { console.log("err"); throw err; }
                 else { console.log("insert success 2"); }
@@ -213,8 +213,8 @@ function ToeicCalendarAPI(req, res, next) {
             // });
 
             //dbinsert certificate_date
-            sql = "insert into certificate_date(name, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?);";
-            params = ['토익', toeic_d_date[j - 1], toeic_s_date[j - 1], toeic_e_date[j - 1], toeic_r_date[j - 1]];
+            sql = "insert into certificate_date(name, time, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?,?);";
+            params = ['토익',toeic_time[j-1], toeic_d_date[j - 1], toeic_s_date[j - 1], toeic_e_date[j - 1], toeic_r_date[j - 1]];
             connection.query(sql, params, function (err, results) {
                 if (err) { console.log("err"); throw err; }
                 else { console.log("insert success 2"); }
@@ -310,7 +310,7 @@ function EngineerCalendarAPI(req, res, next) {
                 SpliteEngineerInfo(items.item[j], j);
 
                 //dbinsert certificate
-                if(Engineer_time[j]!=Engineer_time[j-1]){
+                if (Engineer_time[j] != Engineer_time[j - 1]) {
                     var sql = "insert into certificate(time, name, type, organizer) values(?,?,?,?);";
                     var params = [Engineer_time[j], '기술사', '기술사', '.'];
                     connection.query(sql, params, function (err, results) {
@@ -318,11 +318,11 @@ function EngineerCalendarAPI(req, res, next) {
                         else { console.log("Engineer insert success "); }
                     });
                 }
-                
+
 
                 //dbinsert certificate_date
-                sql = "insert into certificate_date(name, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?);";
-                params = ['기술사', Engineer_d_date[j], Engineer_s_date[j], Engineer_e_date[j], Engineer_r_date[j]];
+                sql = "insert into certificate_date(name, tiem, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?,?);";
+                params = ['기술사', Engineer_time[j], Engineer_d_date[j], Engineer_s_date[j], Engineer_e_date[j], Engineer_r_date[j]];
                 connection.query(sql, params, function (err, results) {
                     if (err) { console.log("err"); throw err; }
                     else { console.log("Engineer insert success 2"); }
@@ -336,71 +336,212 @@ function EngineerCalendarAPI(req, res, next) {
     });
 }
 
+
+
 //기능장 시험 시행일정 조회
+var Functional_time = [];
+var Functional_s_date = [];
+var Functional_e_date = [];
+var Functional_d_date = [];
+var Functional_r_date = [];
+
+var SpliteFunctionalInfo = function (str, i) {
+    Functional_time[i] = str.description.split('제')[1].split(")")[0];
+    Functional_s_date[i] = str.docregstartdt;
+    Functional_e_date[i] = str.docregenddt;
+    Functional_d_date[i] = str.docexamdt;
+    Functional_r_date[i] = str.pracpassdt;
+
+    console.log("time : " + Functional_time[i] + Functional_s_date[i] + Functional_e_date[i] + Functional_d_date[i] + Functional_r_date[i]);
+}
+
 function FunctionalCalendarAPI(req, res, next) {
     console.log("index/FunctionalCalendar router start");
 
     var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getMCList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
-    request.get(requestUrl, (err, res, body) => {
+    request.get(requestUrl, (err, resp, body) => {
 
         if (err) {
             console.log(`err => ${err}`)
         }
-        else {
-            if (res.statusCode == 200) {
-                var result = body
-                console.log(`body data => ${result}`)
-                var xmlToJson = convert.xml2json(result, { compact: true, spaces: 4 });
-                console.log(`xml to json => ${xmlToJson}`)
+        if (resp.statusCode == 200) {
+            var result = body
+            // console.log(`body data => ${result}`);
+            var xmlToJson = convert.xml2json(result, { compact: true, spaces: 4, textFn: RemoveJsonTextAttribute });
+            var jsonData = JSON.parse(xmlToJson);
+
+            // console.log(`xml to json => ${xmlToJson}`);
+            var items = jsonData.response.body.items;
+
+            for (var j = 0; j < items.item.length; j++) {
+                // Functional_time[j]=items.item[j].description;
+                // console.log(Engineer_time[j]);
+                SpliteFunctionalInfo(items.item[j], j);
+
+                //dbinsert certificate
+                var sql = "insert into certificate(time, name, type, organizer) values(?,?,?,?);";
+                var params = [Functional_time[j], '기능장', '기능장', '.'];
+                connection.query(sql, params, function (err, results) {
+                    if (err) { console.log("err"); throw err; }
+                    else { console.log("Functional insert success "); }
+                });
+
+                //dbinsert certificate_date
+                sql = "insert into certificate_date(name,time, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?,?);";
+                params = ['기능장', Functional_time[j], Functional_d_date[j], Functional_s_date[j], Functional_e_date[j], Functional_r_date[j]];
+                connection.query(sql, params, function (err, results) {
+                    if (err) { console.log("err"); throw err; }
+                    else { console.log("Functional insert success 2"); }
+                });
             }
+
+
+            res.status(200).json(items);
+
         }
     });
 }
 
+
+
+
+
+
 //기사, 산업기사 시험 시행일정 조회
+var Industrial_time = [];
+var Industrial_s_date = [];
+var Industrial_e_date = [];
+var Industrial_d_date = [];
+var Industrial_r_date = [];
+
+var SpliteIndustrialInfo = function (str, i) {
+    Industrial_time[i] = str.description.split('제')[1].split(")")[0];
+    Industrial_s_date[i] = str.docregstartdt;
+    Industrial_e_date[i] = str.docregenddt;
+    Industrial_d_date[i] = str.docexamdt;
+    Industrial_r_date[i] = str.pracpassdt;
+
+
+    console.log(typeof Industrial_r_date[i]);
+    // console.log("time : " + Industrial_time[i] + Industrial_s_date[i] + Industrial_e_date[i] + Industrial_d_date[i] + Industrial_r_date[i]);
+}
+
 function IndustrialEngineerCalendarAPI(req, res, next) {
     console.log("index/IndustrialEngineerCalendar router start");
 
     var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getEList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
-    request.get(requestUrl, (err, res, body) => {
+    request.get(requestUrl, (err, resp, body) => {
 
         if (err) {
             console.log(`err => ${err}`)
         }
-        else {
-            if (res.statusCode == 200) {
-                var result = body
-                console.log(`body data => ${result}`)
-                var xmlToJson = convert.xml2json(result, { compact: true, spaces: 4 });
-                console.log(`xml to json => ${xmlToJson}`)
+        if (resp.statusCode == 200) {
+            var result = body
+            var xmlToJson = convert.xml2json(result, { compact: true, spaces: 4, textFn: RemoveJsonTextAttribute });
+            var jsonData = JSON.parse(xmlToJson);
+
+            var items = jsonData.response.body.items;
+
+            for (var j = 0; j < items.item.length; j++) {
+                SpliteIndustrialInfo(items.item[j], j);
+
+                //dbinsert certificate
+                if (Industrial_time[j] != Industrial_time[j - 1]) {
+                    var sql = "insert into certificate(time, name, type, organizer) values(?,?,?,?);";
+                    var params = [Industrial_time[j], '기사,산업기사', '기사,산업기사', '.'];
+                    connection.query(sql, params, function (err, results) {
+                        if (err) { console.log("err"); throw err; }
+                        else { console.log("Industrial insert success "); }
+                    });
+                }
+                //dbinsert certificate_date
+                sql = "insert into certificate_date(name,time, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?,?);";
+                params = ['기사,산업기사', Industrial_time[j], Industrial_d_date[j], Industrial_s_date[j], Industrial_e_date[j], Industrial_r_date[j]];
+                connection.query(sql, params, function (err, results) {
+                    if (err) { console.log("err"); throw err; }
+                    else { console.log("Industrial insert success 2"); }
+                });
             }
+            // res.status(200).json(items);
         }
     });
 }
 
+
+
+
+
 //기능사 시험 시행일정 조회
+var Technician_type = [];
+var Technician_time = [];
+var Technician_s_date = [];
+var Technician_e_date = [];
+var Technician_d_date = [];
+var Technician_r_date = [];
+
+var SpliteTechnicianInfo = function (str, i) {//(2020년도 제1회)
+    Technician_type[i] = str.description.split('년 ')[1].split('사 ')[0]+'사';
+    Technician_time[i] = str.description.split('사 ')[1];
+    Technician_s_date[i] = str.docregstartdt;
+    Technician_e_date[i] = str.docregenddt;
+    Technician_d_date[i] = str.docexamdt;
+
+    //합격자발표가 없을때 필기합격자발표
+    if(str.pracpassdt==null){
+        Technician_r_date[i] = str.pracpassdt;
+    }
+
+    // console.log("type :" + typeof Technician_s_date);
+
+    // console.log("time : " + Technician_time[i] + Technician_s_date[i] + Technician_e_date[i] + Technician_d_date[i] + Technician_r_date[i]);
+}
+
 function TechnicianCalendarAPI(req, res, next) {
     console.log("index/TechnicianCalendar router start");
 
-    var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getCList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&stdt=2020&'
+    var requestUrl = 'http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getCList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&'
 
-    request.get(requestUrl, (err, res, body) => {
+    request.get(requestUrl, (err, resp, body) => {
 
         if (err) {
             console.log(`err => ${err}`)
         }
-        else {
-            if (res.statusCode == 200) {
-                var result = body
-                console.log(`body data => ${result}`)
-                var xmlToJson = convert.xml2json(result, { compact: true, spaces: 4 });
-                console.log(`xml to json => ${xmlToJson}`)
+        if (resp.statusCode == 200) {
+            var result = body
+            var xmlToJson = convert.xml2json(result, { compact: true, spaces: 4, textFn: RemoveJsonTextAttribute });
+            var jsonData = JSON.parse(xmlToJson);
+
+            var items = jsonData.response.body.items;
+
+            for (var j = 0; j < items.item.length; j++) {
+                SpliteTechnicianInfo(items.item[j], j);
+
+                //dbinsert certificate
+                if (Technician_time[j] != Technician_time[j - 1]) {
+                    var sql = "insert into certificate(time, name, type, organizer) values(?,?,?,?);";
+                    var params = [Technician_time[j], Technician_type[j], Technician_type[j], '.'];
+                    connection.query(sql, params, function (err, results) {
+                        if (err) { console.log("err"); throw err; }
+                        else { console.log("Technician insert success "); }
+                    });
+                //dbinsert certificate_date
+                    sql = "insert into certificate_date(name, time, d_day, apply_start, apply_end, result_release) values(?,?,?,?,?,?);";
+                    params = [Technician_type[j], Technician_time[j], Technician_d_date[j], Technician_s_date[j], Technician_e_date[j], Technician_r_date[j]];
+                    connection.query(sql, params, function (err, results) {
+                        if (err) { console.log("err"); throw err; }
+                        else { console.log("Technician insert success 2"); }
+                    });
+                }
             }
+
+            res.status(200).json(items);
+
         }
     });
 }
+
 
 //종목별 응시수수료 조회>요청변수 종목코드? >http://openapi.q-net.or.kr/api/service/rest/InquiryTestInformationNTQSVC/getFeeList?serviceKey=hF0yNmEeBbUo9AfcpeOObbn3XMqzqbO%2BAM45bdxziuTwH8fiUa6DuS6DHcgvWG2BIYovlkYGfXEW9Faj7BXmxQ%3D%3D&jmcd=1320&
 
